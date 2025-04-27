@@ -572,7 +572,7 @@ async function fillWiki () {
     .join('https://minecraft.wiki//resources/assets/')
     .split('/load.php?')
     .join('https://minecraft.wiki//load.php?')
-	  .split('/w/File:')
+    .split('/w/File:')
     .join('https://minecraft.wiki/w/File:')
 
   // TODO: Break or modify links?
