@@ -18,21 +18,7 @@
     "email": "heath.mitchell27@gmail.com"
   },
   "license": "MIT",
-  "config": {
-    "forge": {
-      "packagerConfig": {},
-      "makers": [
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin",
-            "linux",
-            "win32"
-          ]
-        }
-      ]
-    }
-  },
+  "config": {},
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.61",
     "@electron-forge/maker-deb": "^6.0.0-beta.61",
@@ -57,6 +43,7 @@
     "minecraft-folder-path": "^1.1.0",
     "minecraft-protocol": "^1.43.0",
     "node-eval": "^2.0.0",
+    "pakkit": "file:",
     "patch-package": "^6.4.7",
     "source-map-support": "^0.5.19",
     "ws": "^7.4.6"
