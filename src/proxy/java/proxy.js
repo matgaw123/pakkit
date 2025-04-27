@@ -36,7 +36,7 @@ exports.capabilities = {
   clientboundPackets: [],
   serverboundPackets: [],
   // TODO: Only for latest, or fetch older pages
-  wikiVgPage: 'https://wiki.vg/Protocol',
+  wikiVgPage: 'https://minecraft.wiki/w/Java_Edition_protocol',
   versionId: undefined
 }
 
