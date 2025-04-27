@@ -567,11 +567,13 @@ async function fillWiki () {
 // Allow it to load properly
   data = data
     .split('/images/')
-    .join('https://wiki.vg/images/')
+    .join('https://minecraft.wiki//images/')
     .split('/resources/assets/')
-    .join('https://wiki.vg/resources/assets/')
+    .join('https://minecraft.wiki//resources/assets/')
     .split('/load.php?')
-    .join('https://wiki.vg/load.php?')
+    .join('https://minecraft.wiki//load.php?')
+	  .split('/w/File:')
+    .join('https://minecraft.wiki/w/File:')
 
   // TODO: Break or modify links?
   document.getElementById('iframe').contentWindow.document.write(data)
