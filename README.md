@@ -23,3 +23,10 @@ You need node.js and npm installed. It should work on all OSes that are supporte
 ![Scripting](https://user-images.githubusercontent.com/13787163/161958863-6948a28f-2724-4040-845b-b2cade08d0f5.png)
 
 Logo from https://www.needpix.com/photo/72249/package-parcel-packet-box-cardboard-icon
+
+ # how to use 
+
+start server at port 25565 (defult mc port)
+
+connect to (your ip most likly 127.0.0.1 or 0.0.0.0 ) to ip add :25566 and  connect to server
+ 
