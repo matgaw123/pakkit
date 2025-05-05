@@ -1,36 +1,131 @@
-# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
-# For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
+name: Build pakkit
 
-name: Node.js Package
-
-on:
-  release:
-    types: [created]
+on: push
 
 jobs:
-  build:
+  build-job:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm ci
-      - run: npm test
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
 
-  publish-gpr:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: https://npm.pkg.github.com/
-      - run: npm ci
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    - name: Set up Node
+      uses: actions/setup-node@v1
+      with:
+        node-version: 16.x
+
+    - name: Set up Java
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+
+    - name: Install Wine
+      run: sudo apt update && sudo apt install wine64
+
+    - name: Install node-prune
+      run: curl -sf https://gobinaries.com/tj/node-prune | sh
+
+    - run: npm install
+
+    - name: Build for Windows
+      run: |
+        npx electron-forge package --platform win32
+        cd out/pakkit-win32-x64/resources/app/; node-prune
+
+    - name: Build for Linux
+      run: |
+        npx electron-forge package --platform linux
+        cd out/pakkit-linux-x64/resources/app/; node-prune
+
+    - run: chmod +x out/pakkit-linux-x64/pakkit
+
+    - name: Build for macOS
+      run: |
+        npx electron-forge package --platform darwin
+        cd out/pakkit-darwin-x64/pakkit.app/Contents/Resources/app/; node-prune
+
+    - name: Create archives for new release
+      if: ${{ github.ref == 'refs/heads/master' }}
+      run: |
+        mv out/pakkit-win32-x64 pakkit-windows-x64
+        mv out/pakkit-linux-x64 pakkit-linux-x64
+        mv out/pakkit-darwin-x64 pakkit-macos-x64
+        zip -r -y out/pakkit-windows-x64.zip pakkit-windows-x64/
+        zip -r -y out/pakkit-linux-x64.zip pakkit-linux-x64/
+        zip -r -y out/pakkit-macos-x64.zip pakkit-macos-x64/
+
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1
+      if: ${{ github.ref == 'refs/heads/master' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: github-${{ github.run_number }}
+        release_name: GitHub build ${{ github.run_number }}
+        body: github-${{ github.run_number }}
+
+    - name: Upload Windows build
+      uses: actions/upload-release-asset@v1
+      if: ${{ github.ref == 'refs/heads/master' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: out/pakkit-windows-x64.zip
+        asset_name: pakkit-windows-x64-v${{ github.run_number }}.zip
+        asset_content_type: application/zip
+
+    - name: Upload Linux build
+      uses: actions/upload-release-asset@v1
+      if: ${{ github.ref == 'refs/heads/master' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: out/pakkit-linux-x64.zip
+        asset_name: pakkit-linux-x64-v${{ github.run_number }}.zip
+        asset_content_type: application/zip
+
+    - name: Upload macOS build
+      uses: actions/upload-release-asset@v1
+      if: ${{ github.ref == 'refs/heads/master' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: out/pakkit-macos-x64.zip
+        asset_name: pakkit-macos-x64-v${{ github.run_number }}.zip
+        asset_content_type: application/zip
+
+    - name: Prepare to upload artifacts
+      if: ${{ github.ref != 'refs/heads/master' }}
+      run: |
+        mkdir out/windows
+        mkdir out/linux
+        mkdir out/macos
+        mv out/pakkit-win32-x64 out/windows/pakkit-windows-x64
+        mv out/pakkit-linux-x64 out/linux/pakkit-linux-x64
+        mv out/pakkit-darwin-x64 out/macos/pakkit-macos-x64
+
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v2
+      if: ${{ github.ref != 'refs/heads/master' }}
+      with:
+        name: pakkit-windows-x64
+        path: out/windows/
+
+    - name: Upload Linux artifact
+      uses: actions/upload-artifact@v2
+      if: ${{ github.ref != 'refs/heads/master' }}
+      with:
+        name: pakkit-linux-x64
+        path: out/linux/
+
+    - name: Upload macOS artifact
+      uses: actions/upload-artifact@v2
+      if: ${{ github.ref != 'refs/heads/master' }}
+      with:
+        name: pakkit-macos-x64
+        path: out/macos/
